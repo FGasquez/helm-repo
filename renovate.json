@@ -15,7 +15,7 @@
       "automerge": false,
       "groupName": "affine chart updates",
       "versioning": "semver",
-      "ignoreVersions": ["/^(.*-)(canary|alpha|beta|rc|snapshot|dev|pre)(\\.[0-9]+)?$/i"]
+      "allowedVersions": "!/^.*-(canary|alpha|beta|rc|snapshot|dev|pre)(\\.[0-9]+)?$/i"
     }
   ],
   "customManagers": [
