@@ -13,7 +13,9 @@
       "matchDepNames": ["ghcr.io/toeverything/affine"],
       "matchFileNames": ["charts/affine/**"],
       "automerge": false,
-      "groupName": "affine chart updates"
+      "groupName": "affine chart updates",
+      "versioning": "semver",
+      "ignoreVersions": ["/^(.*-)(canary|alpha|beta|rc|snapshot|dev|pre)(\\.[0-9]+)?$/i"]
     }
   ],
   "customManagers": [
