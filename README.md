@@ -1,4 +1,4 @@
-# fg-helm-repo
+# helm-repo
 
 A personal Helm chart repository for Kubernetes applications, published as OCI artifacts to GitHub Container Registry (GHCR).
 
