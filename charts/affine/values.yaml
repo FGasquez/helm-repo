@@ -1,7 +1,8 @@
 affine:
   image:
     repository: ghcr.io/toeverything/affine
-    tag: stable
+    # renovate: datasource=docker depName=ghcr.io/toeverything/affine
+    tag: "0.27.3"
     pullPolicy: IfNotPresent
   service:
     type: ClusterIP

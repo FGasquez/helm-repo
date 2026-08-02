@@ -1,0 +1,31 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["config:recommended"],
+  "helm-values": {
+    "fileMatch": ["charts/\\w+/values\\.yaml$"]
+  },
+  "helm-requirements": {
+    "fileMatch": ["charts/\\w+/Chart\\.yaml$"]
+  },
+  "packageRules": [
+    {
+      "matchDatasources": ["docker"],
+      "matchDepNames": ["ghcr.io/toeverything/affine"],
+      "matchFileNames": ["charts/affine/**"],
+      "automerge": false,
+      "groupName": "affine chart updates"
+    }
+  ],
+  "customManagers": [
+    {
+      "customType": "regex",
+      "fileMatch": ["charts/affine/Chart\\.yaml$"],
+      "matchStrings": [
+        "appVersion:\\s*\"?(?<currentValue>[^\"\\n]+)\"?"
+      ],
+      "datasourceTemplate": "docker",
+      "depNameTemplate": "ghcr.io/toeverything/affine",
+      "versioningTemplate": "docker"
+    }
+  ]
+}
