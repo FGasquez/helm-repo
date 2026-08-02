@@ -1,0 +1,64 @@
+{{- if and .Values.birthdays.enabled .Values.birthdays.remainder.enabled }}
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: {{ include "discord-bot.fullname" . }}-remainder
+spec:
+  schedule: {{ .Values.birthdays.remainder.schedule | quote }}
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          restartPolicy: Never
+          {{- with .Values.imagePullSecrets }}
+          imagePullSecrets:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          containers:
+            - name: remainder
+              image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+              imagePullPolicy: {{ .Values.image.pullPolicy }}
+              command:
+              - "/app/main"
+              {{- if .Values.bot.messagesFile }}
+              - --messages-file 
+              - /app/{{ .Values.bot.messagesFile }}
+              {{- end }}
+              - --birthdays-file
+              - /app/{{ .Values.birthdays.birthdayFile }}
+              - --advertise-today-birthday
+              {{- if .Values.birthdays.remainder.channel }}
+              - --advertise-channel
+              - {{ .Values.birthdays.remainder.channel | quote }}
+              {{- end }}
+              envFrom:
+                - secretRef:
+                    name: {{ include "discord-bot.fullname" . }}
+                - configMapRef:
+                    name: {{ include "discord-bot.fullname" . }}
+                {{- if .Values.bot.existingSecretEnv }}
+                - secretRef:
+                    name: {{ .Values.bot.existingSecretEnv }}
+                {{- end }}
+              volumeMounts:
+                - name: birthdays
+                  mountPath: /app/{{ .Values.birthdays.birthdayFile }}
+                  subPath: {{ .Values.birthdays.birthdayFile }}
+              {{- if .Values.bot.customMessages }}
+                - name: messages
+                  mountPath: /app/{{ .Values.bot.messagesFile }}
+                  subPath: {{ .Values.bot.messagesFile }}
+              {{- end }}
+          volumes:
+            - name: birthdays
+              configMap:
+                name: {{ include "discord-bot.fullname" . }}-birthdays
+          {{- if .Values.bot.customMessages }}
+            - name: messages
+              configMap:
+                name: {{ include "discord-bot.fullname" . }}
+                items:
+                  - key: messagesFile.yaml
+                    path: {{ .Values.bot.messagesFile }}
+          {{- end }}
+{{- end }}

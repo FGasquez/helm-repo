@@ -1,0 +1,66 @@
+affine:
+  image:
+    repository: ghcr.io/toeverything/affine
+    tag: stable
+    pullPolicy: IfNotPresent
+  service:
+    type: ClusterIP
+    port: 3010
+  resources: {}
+  persistence:
+    storage:
+      enabled: true
+      size: 10Gi
+      storageClass: ""
+    config:
+      enabled: true
+      size: 1Gi
+      storageClass: ""
+
+serviceAccount:
+  create: true
+  automount: false
+  annotations: {}
+  name: "affine"
+
+postgres:
+  enabled: true
+  image:
+    repository: pgvector/pgvector
+    tag: pg16
+    pullPolicy: IfNotPresent
+  auth:
+    # If existingSecret is set, it will use that secret instead of creating one.
+    # The secret should contain `POSTGRES_USER` and `POSTGRES_PASSWORD` keys.
+    existingSecret: ""
+    username: affine
+    password: ""
+    database: affine
+  persistence:
+    enabled: true
+    size: 8Gi
+    storageClass: ""
+  service:
+    port: 5432
+  resources: {}
+
+redis:
+  enabled: true
+  image:
+    repository: redis
+    tag: latest
+    pullPolicy: IfNotPresent
+  service:
+    port: 6379
+  resources: {}
+
+ingress:
+  enabled: false
+  className: ""
+  annotations: {}
+  hosts:
+    - host: affine.local
+      paths:
+        - path: /
+          pathType: Prefix
+  tls: []

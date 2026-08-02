@@ -1,0 +1,139 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "affine.fullname" . }}
+  labels:
+    {{- include "affine.labels" . | nindent 4 }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      {{- include "affine.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "affine.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "affine.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      initContainers:
+        - name: affine-migration
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.affine.image.repository }}:{{ .Values.affine.image.tag }}"
+          imagePullPolicy: {{ .Values.affine.image.pullPolicy }}
+          command: ['sh', '-c', 'node ./scripts/self-host-predeploy.js']
+          envFrom:
+            - configMapRef:
+                name: {{ include "affine.fullname" . }}
+          env:
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: {{ if .Values.postgres.auth.existingSecret }}{{ .Values.postgres.auth.existingSecret }}{{ else }}{{ include "affine.fullname" . }}-postgres{{ end }}
+                  key: POSTGRES_USER
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ if .Values.postgres.auth.existingSecret }}{{ .Values.postgres.auth.existingSecret }}{{ else }}{{ include "affine.fullname" . }}-postgres{{ end }}
+                  key: POSTGRES_PASSWORD
+            - name: POSTGRES_DB
+              valueFrom:
+                secretKeyRef:
+                  name: {{ if .Values.postgres.auth.existingSecret }}{{ .Values.postgres.auth.existingSecret }}{{ else }}{{ include "affine.fullname" . }}-postgres{{ end }}
+                  key: POSTGRES_DB
+            - name: POSTGRES_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: {{ if .Values.postgres.auth.existingSecret }}{{ .Values.postgres.auth.existingSecret }}{{ else }}{{ include "affine.fullname" . }}-postgres{{ end }}
+                  key: POSTGRES_HOST
+            - name: DATABASE_URL
+              value: postgresql://$(POSTGRES_USER):$(POSTGRES_PASSWORD)@$(POSTGRES_HOST):5432/$(POSTGRES_DB)
+          volumeMounts:
+            {{- if .Values.affine.persistence.storage.enabled }}
+            - name: storage
+              mountPath: /root/.affine/storage
+            {{- end }}
+            {{- if .Values.affine.persistence.config.enabled }}
+            - name: config
+              mountPath: /root/.affine/config
+            {{- end }}
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.affine.image.repository }}:{{ .Values.affine.image.tag }}"
+          imagePullPolicy: {{ .Values.affine.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: 3010
+              protocol: TCP
+          envFrom:
+            - configMapRef:
+                name: {{ include "affine.fullname" . }}
+          env:
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: {{ if .Values.postgres.auth.existingSecret }}{{ .Values.postgres.auth.existingSecret }}{{ else }}{{ include "affine.fullname" . }}-postgres{{ end }}
+                  key: POSTGRES_USER
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ if .Values.postgres.auth.existingSecret }}{{ .Values.postgres.auth.existingSecret }}{{ else }}{{ include "affine.fullname" . }}-postgres{{ end }}
+                  key: POSTGRES_PASSWORD
+            - name: POSTGRES_DB
+              valueFrom:
+                secretKeyRef:
+                  name: {{ if .Values.postgres.auth.existingSecret }}{{ .Values.postgres.auth.existingSecret }}{{ else }}{{ include "affine.fullname" . }}-postgres{{ end }}
+                  key: POSTGRES_DB
+            - name: POSTGRES_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: {{ if .Values.postgres.auth.existingSecret }}{{ .Values.postgres.auth.existingSecret }}{{ else }}{{ include "affine.fullname" . }}-postgres{{ end }}
+                  key: POSTGRES_HOST
+            - name: DATABASE_URL
+              value: postgresql://$(POSTGRES_USER):$(POSTGRES_PASSWORD)@$(POSTGRES_HOST):5432/$(POSTGRES_DB)
+          volumeMounts:
+            {{- if .Values.affine.persistence.storage.enabled }}
+            - name: storage
+              mountPath: /root/.affine/storage
+            {{- end }}
+            {{- if .Values.affine.persistence.config.enabled }}
+            - name: config
+              mountPath: /root/.affine/config
+            {{- end }}
+          resources:
+            {{- toYaml .Values.affine.resources | nindent 12 }}
+      volumes:
+        {{- if .Values.affine.persistence.storage.enabled }}
+        - name: storage
+          persistentVolumeClaim:
+            claimName: {{ include "affine.fullname" . }}-storage
+        {{- end }}
+        {{- if .Values.affine.persistence.config.enabled }}
+        - name: config
+          persistentVolumeClaim:
+            claimName: {{ include "affine.fullname" . }}-config
+        {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

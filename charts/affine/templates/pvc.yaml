@@ -1,0 +1,35 @@
+{{- if and .Values.affine.persistence.storage.enabled }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "affine.fullname" . }}-storage
+  labels:
+    {{- include "affine.labels" . | nindent 4 }}
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: {{ .Values.affine.persistence.storage.size }}
+  {{- if .Values.affine.persistence.storage.storageClass }}
+  storageClassName: {{ .Values.affine.persistence.storage.storageClass }}
+  {{- end }}
+{{- end }}
+---
+{{- if and .Values.affine.persistence.config.enabled }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "affine.fullname" . }}-config
+  labels:
+    {{- include "affine.labels" . | nindent 4 }}
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: {{ .Values.affine.persistence.config.size }}
+  {{- if .Values.affine.persistence.config.storageClass }}
+  storageClassName: {{ .Values.affine.persistence.config.storageClass }}
+  {{- end }}
+{{- end }}

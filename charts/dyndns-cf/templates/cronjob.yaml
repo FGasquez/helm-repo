@@ -1,0 +1,24 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: {{ include "dyndns-chart.fullname" . }}
+spec:
+  schedule: {{ .Values.schedule | quote }}
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          restartPolicy: OnFailure
+          imagePullSecrets:
+            - name: {{ .Values.imagePullSecret }}
+          containers:
+            - name: dns-update
+              image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+              imagePullPolicy: {{ .Values.image.pullPolicy }}
+              envFrom:
+              - secretRef:
+                {{- if and (.Values.existingSecret) (not (empty .Values.existingSecret)) }}
+                  name: {{ .Values.existingSecret }}
+                {{- else }}
+                  name: {{ include "dyndns-chart.fullname" . }}
+                {{- end }}

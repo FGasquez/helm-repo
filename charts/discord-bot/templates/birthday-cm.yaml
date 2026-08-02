@@ -1,0 +1,9 @@
+{{- if .Values.birthdays.enabled }}
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: {{ include "discord-bot.fullname" . }}-birthdays
+data:
+  {{ .Values.birthdays.birthdayFile }}: |
+{{- .Values.birthdays.list | toYaml | nindent 4 }}
+{{- end }}

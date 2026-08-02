@@ -1,0 +1,31 @@
+name: Release Charts (OCI)
+on:
+  push:
+    branches: [ main ]
+    paths: [ 'charts/**' ]
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write  # Critical for pushing to GHCR
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Helm
+        uses: azure/setup-helm@v4
+
+      - name: Login to GHCR
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | helm registry login ghcr.io -u ${{ github.actor }} --password-stdin
+
+      - name: Publish Charts
+        run: |
+          for chart in charts/*; do
+            if [ -d "$chart" ]; then
+              helm package "$chart"
+              helm push *.tgz oci://ghcr.io/${{ github.repository_owner }}/charts
+              rm *.tgz
+            fi
+          done

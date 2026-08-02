@@ -1,0 +1,100 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "discord-bot.fullname" . }}
+  labels:
+    {{- include "discord-bot.labels" . | nindent 4 }}
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "discord-bot.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "discord-bot.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "discord-bot.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Chart.Name }}
+          command:
+              - "/app/main"
+              {{- if .Values.bot.unregisterCommands }}
+              - "--remove-commands"
+              {{- end }}
+              {{- if .Values.bot.messagesFile }}
+              - --messages-file 
+              - /app/{{ .Values.bot.messagesFile }}
+              {{- end }}
+              {{- if and .Values.birthdays.enabled .Values.birthdays.enableCommands }}
+              - --birthdays-file
+              - /app/{{ .Values.birthdays.birthdayFile }}
+              {{- end}}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          envFrom:
+            - secretRef:
+                name: {{ include "discord-bot.fullname" . }}
+            - configMapRef:
+                name: {{ include "discord-bot.fullname" . }}
+          {{- if .Values.bot.existingSecretEnv }}
+            - secretRef:
+                name: {{ .Values.bot.existingSecretEnv }}
+          {{- end }}
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+        {{- if or .Values.bot.customMessages .Values.birthdays.enabled }}
+          volumeMounts:
+          {{- if .Values.bot.customMessages }}
+            - name: messages
+              mountPath: /app/{{ .Values.bot.messagesFile }}
+              subPath: {{ .Values.bot.messagesFile }}
+          {{- end }}
+          {{- if .Values.birthdays.enabled }}
+            - name: birthdays
+              mountPath: /app/{{ .Values.birthdays.birthdayFile }}
+              subPath: {{ .Values.birthdays.birthdayFile }}
+          {{- end }}
+        {{- end }}
+      {{- if or .Values.bot.customMessages .Values.birthdays.enabled }}
+      volumes:
+      {{- end }}
+      {{- if .Values.birthdays.enabled }}
+        - name: birthdays
+          configMap:
+            name: {{ include "discord-bot.fullname" . }}-birthdays
+      {{- end}}
+      {{- if .Values.bot.customMessages }}
+        - name: messages
+          configMap:
+            name: {{ include "discord-bot.fullname" . }}
+            items:
+              - key: messagesFile.yaml
+                path: {{ .Values.bot.messagesFile }}
+      {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
