@@ -10,7 +10,7 @@ This repository contains Helm charts for self-hosted services and personal proje
 
 | Chart | Description | Chart Version | App Version |
 |-------|-------------|---------------|-------------|
-| [affine](charts/affine) | AFFiNE — an open-source knowledge management and collaboration platform | 0.26.3 | 0.26.3 |
+| [affine](charts/affine) | AFFiNE — an open-source knowledge management and collaboration platform | 0.27.3 | 0.27.3 |
 | [countdown](charts/countdown) | Simple countdown web application | 1.16.0 | 1.16.0 |
 | [discord-bot](charts/discord-bot) | Custom Discord bot with scheduled reminders | 0.5.1 | 0.5.1 |
 | [dyndns-cf](charts/dyndns-cf) | Dynamic DNS updater for Cloudflare | 1.0.1 | 1.0.1 |
