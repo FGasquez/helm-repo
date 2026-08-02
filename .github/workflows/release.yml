@@ -22,10 +22,12 @@ jobs:
 
       - name: Publish Charts
         run: |
+          REPO_OWNER=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
           for chart in charts/*; do
             if [ -d "$chart" ]; then
               helm package "$chart"
-              helm push *.tgz oci://ghcr.io/${{ github.repository_owner }}/charts
-              rm *.tgz
+              chart_package=$(ls *.tgz | head -n 1)
+              helm push "$chart_package" "oci://ghcr.io/${REPO_OWNER}/charts"
+              rm "$chart_package"
             fi
           done
