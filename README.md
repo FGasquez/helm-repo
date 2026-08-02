@@ -10,8 +10,8 @@ This repository contains Helm charts for self-hosted services and personal proje
 
 | Chart | Description | Chart Version | App Version |
 |-------|-------------|---------------|-------------|
-| [affine](charts/affine) | AFFiNE — an open-source knowledge management and collaboration platform | 0.1.4 | 0.26.3 |
-| [countdown](charts/countdown) | Simple countdown web application | 0.1.0 | 1.16.0 |
+| [affine](charts/affine) | AFFiNE — an open-source knowledge management and collaboration platform | 0.26.3 | 0.26.3 |
+| [countdown](charts/countdown) | Simple countdown web application | 1.16.0 | 1.16.0 |
 | [discord-bot](charts/discord-bot) | Custom Discord bot with scheduled reminders | 0.5.1 | 0.5.1 |
 | [dyndns-cf](charts/dyndns-cf) | Dynamic DNS updater for Cloudflare | 1.0.1 | 1.0.1 |
 
@@ -22,16 +22,14 @@ This repository contains Helm charts for self-hosted services and personal proje
 These charts are published to GHCR as OCI artifacts. You can pull and install a chart directly:
 
 ```bash
-helm install my-release oci://ghcr.io/<owner>/charts/<chart-name> --version <chart-version>
+helm install my-release oci://ghcr.io/fgasquez/charts/<chart-name> --version <chart-version>
 ```
 
 For example:
 
 ```bash
-helm install my-affine oci://ghcr.io/<owner>/charts/affine --version 0.1.4
+helm install my-affine oci://ghcr.io/fgasquez/charts/affine --version 0.1.4
 ```
-
-> Replace `<owner>` with the GitHub organization or username that owns this repository.
 
 ### Install from local source
 
@@ -73,7 +71,7 @@ The `.github/workflows/release.yml` workflow handles automated publishing:
 1. Triggers on pushes to `main` that modify `charts/**`
 2. Packages each chart under `charts/`
 3. Logs into GHCR using the built-in `GITHUB_TOKEN`
-4. Pushes the packaged charts to `oci://ghcr.io/<owner>/charts`
+4. Pushes the packaged charts to `oci://ghcr.io/fgasquez/charts`
 
 No manual intervention is required for publishing after a chart change is merged.
 
