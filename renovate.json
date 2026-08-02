@@ -16,6 +16,15 @@
       "groupName": "affine chart updates",
       "versioning": "semver",
       "allowedVersions": "!/^.*-(canary|alpha|beta|rc|snapshot|dev|pre)(\\.[0-9]+)?$/i"
+    },
+    {
+      "matchDatasources": ["docker"],
+      "matchDepNames": [
+        "ghcr.io/fgasquez/simple-countdown-js",
+        "ghcr.io/fgasquez/alum-bot",
+        "ghcr.io/fgasquez/cloudflare-dns-update"
+      ],
+      "enabled": false
     }
   ],
   "customManagers": [
