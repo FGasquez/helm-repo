@@ -17,7 +17,7 @@ jobs:
     if: contains(github.event.pull_request.labels.*.name, 'renovate') || contains(github.event.pull_request.title, 'affine')
     steps:
       - name: Checkout PR
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           ref: ${{ github.head_ref }}
           fetch-depth: 0
